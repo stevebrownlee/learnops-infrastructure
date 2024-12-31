@@ -11,6 +11,10 @@ provider "digitalocean" {
   token = var.do_token  # This will be provided via terraform.tfvars
 }
 
+data "digitalocean_domain" "default" {
+  name = "nss.team"
+}
+
 # Reference existing SSH key
 data "digitalocean_ssh_key" "github_actions" {
   name = "digitalocean"  # The name of your existing key in DO
@@ -175,6 +179,14 @@ resource "digitalocean_firewall" "monarch" {
     port_range = "53"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
+}
+
+resource "digitalocean_record" "valkey" {
+  domain = data.digitalocean_domain.default.id
+  type   = "A"
+  name   = "switchboard"
+  value  = digitalocean_droplet.valkey.ipv4_address
+  ttl    = 300
 }
 
 resource "digitalocean_project_resources" "learningplatform_resources" {
