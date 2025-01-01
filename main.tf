@@ -120,6 +120,11 @@ resource "digitalocean_firewall" "valkey" {
   }
 
   # Existing Valkey rule
+  # inbound_rule {
+  #   protocol = "tcp"
+  #   port_range = "6379"
+  #   source_addresses = ["0.0.0.0/0", "::/0"]
+  # }
   inbound_rule {
     protocol = "tcp"
     port_range = "6379"
@@ -179,6 +184,12 @@ resource "digitalocean_firewall" "monarch" {
     port_range = "53"
     destination_addresses = ["0.0.0.0/0", "::/0"]
   }
+
+  outbound_rule {
+    protocol = "tcp"
+    port_range = "6379"
+    destination_addresses = ["0.0.0.0/0", "::/0"]
+  }
 }
 
 resource "digitalocean_record" "valkey" {
@@ -186,6 +197,14 @@ resource "digitalocean_record" "valkey" {
   type   = "A"
   name   = "switchboard"
   value  = digitalocean_droplet.valkey.ipv4_address
+  ttl    = 300
+}
+
+resource "digitalocean_record" "monarch" {
+  domain = data.digitalocean_domain.default.id
+  type   = "A"
+  name   = "monarch"
+  value  = digitalocean_droplet.monarch.ipv4_address
   ttl    = 300
 }
 
