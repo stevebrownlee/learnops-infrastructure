@@ -2,21 +2,32 @@
 
 ```mermaid
 graph TB
-    subgraph "Digital Ocean Project: Learning Platform"
+    subgraph "Learning Platform Infrastructure"
         subgraph "Domain: nss.team"
-            switchboard["switchboard.nss.team\n(DNS A Record)"]
-            monarch["monarch.nss.team\n(DNS A Record)"]
+            switchboard["switchboard.nss.team
+            (DNS A Record)"]
+            monarch["monarch.nss.team
+            (DNS A Record)"]
         end
 
         subgraph "Droplets"
-            vd["Valkey Droplet\ns-1vcpu-1gb\nUbuntu 22.04"]
-            md["Monarch Droplet\ns-1vcpu-1gb\nUbuntu 22.04"]
-            api["API Droplet\n(Existing)"]
+            vd["Valkey Droplet
+            s-1vcpu-1gb
+            Ubuntu 22.04"]
+            md["Monarch Droplet
+            s-1vcpu-1gb
+            Ubuntu 22.04"]
+            api["API Droplet
+            (Existing)"]
         end
 
         subgraph "Firewalls"
-            vf["Valkey Firewall\nInbound: 22, 6379\nOutbound: 80, 443, 53"]
-            mf["Monarch Firewall\nInbound: 22\nOutbound: 80, 443, 53, 6379"]
+            vf["Valkey Firewall
+            Inbound: 22, 6379
+            Outbound: 80, 443, 53"]
+            mf["Monarch Firewall
+            Inbound: 22
+            Outbound: 80, 443, 53, 6379"]
         end
     end
 
@@ -27,8 +38,10 @@ graph TB
     mf --> md
 
     %% Service Communications
-    md -->|"Valkey Protocol\nPort 6379"| vd
-    api -->|"Valkey Protocol\nPort 6379"| vd
+    md -->|"Valkey Protocol
+    Port 6379"| vd
+    api -->|"Valkey Protocol
+    Port 6379"| vd
 
     %% Firewall Rules
     vf -.->|"Controls Access"| vd
