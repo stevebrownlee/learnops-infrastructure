@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "digitalocean" {
-  token = var.do_token  # This will be provided via terraform.tfvars
+  token = var.DIGITAL_OCEAN_TOKEN  # This will be provided via terraform.tfvars
 }
 
 data "digitalocean_domain" "default" {
@@ -30,7 +30,7 @@ resource "digitalocean_droplet" "valkey" {
   name     = "valkey"
   size     = "s-1vcpu-1gb"
   image    = "ubuntu-22-04-x64"
-  region   = var.region
+  region   = var.REGION
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
 
   user_data = <<-EOF
@@ -79,7 +79,7 @@ resource "digitalocean_droplet" "monarch" {
   name     = "monarch"
   size     = "s-1vcpu-1gb"
   image    = "ubuntu-22-04-x64"
-  region   = var.region
+  region   = var.REGION
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
 
   user_data = <<-EOF
@@ -125,7 +125,7 @@ resource "digitalocean_firewall" "valkey" {
     port_range = "6379"
     source_droplet_ids = [
       digitalocean_droplet.monarch.id,
-      var.api_droplet_id
+      var.API_DROPLET_ID
     ]
   }
 

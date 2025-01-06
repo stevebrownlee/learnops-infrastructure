@@ -1,14 +1,15 @@
-variable "do_token" {
+variable "DIGITAL_OCEAN_TOKEN" {
   description = "DigitalOcean API Token"
   sensitive   = true
 }
 
-variable "region" {
+variable "REGION" {
   description = "DigitalOcean region"
   default     = "nyc1"
 }
 
-variable "api_droplet_id" {
+variable "API_DROPLET_ID" {
   description = "ID of the API droplet"
   type        = string
 }
+
