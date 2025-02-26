@@ -132,6 +132,30 @@ resource "digitalocean_droplet" "authproxy" {
 
               sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
+              # Install certbot for certificate generation
+              sudo apt-get install certbot -y
+
+              # Create directory for certificates
+              sudo mkdir -p /etc/letsencrypt
+              sudo mkdir -p /var/lib/letsencrypt
+
+              # Create directory for cert challenge responses
+              sudo mkdir -p /var/www/certbot
+
+              # Obtain initial certificate using standalone mode
+              # This will be replaced by the webroot method after the container is running
+              sudo certbot certonly --standalone \
+                --non-interactive --agree-tos \
+                --email ${ var.ssl_cert_email } \
+                --domains authproxy.nss.team \
+                --preferred-challenges http
+
+              # Set permissions to allow container to read certs
+              sudo chmod -R 755 /etc/letsencrypt
+
+              # Set up auto-renewal (using standalone mode by default)
+              echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
+
               # Create directory for Auth Proxy
               # GitHub Actions workflow will handle deployment of files and container
               mkdir -p /opt/authproxy
@@ -156,6 +180,13 @@ resource "digitalocean_firewall" "authproxy" {
   inbound_rule {
     protocol = "tcp"
     port_range = "80"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Allow HTTPS (for SSL)
+  inbound_rule {
+    protocol = "tcp"
+    port_range = "443"
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
