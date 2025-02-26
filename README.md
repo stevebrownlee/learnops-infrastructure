@@ -43,9 +43,6 @@ graph TB
     switchboard --> vd
     monarch --> md
     authproxy --> apd
-    vf --> vd
-    mf --> md
-    apf --> apd
 
     %% Service Communications
     md -->|"Valkey Protocol
