@@ -13,27 +13,9 @@ variable "api_droplet_id" {
   type        = string
 }
 
-variable "docker_registry" {
-  description = "Name of Digital Ocean Docker Registry"
-  type        = string
-}
-
-variable "do_username" {
-  description = "Name of Digital Ocean Docker Registry"
-  type        = string
-}
-
-variable "foundations_client_id" {
-  description = "Name of Digital Ocean Docker Registry"
-  type        = string
-}
-
-variable "foundations_client_secret" {
-  description = "Name of Digital Ocean Docker Registry"
-  type        = string
-}
-
-variable "proxy_allowed_origins" {
-  description = "Name of Digital Ocean Docker Registry"
-  type        = string
-}
+# The following variables have been removed as they will be managed by GitHub Actions:
+# - docker_registry
+# - do_username
+# - foundations_client_id
+# - foundations_client_secret
+# - proxy_allowed_origins

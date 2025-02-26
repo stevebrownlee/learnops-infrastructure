@@ -133,44 +133,11 @@ resource "digitalocean_droplet" "authproxy" {
               sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
               # Create directory for Auth Proxy
+              # GitHub Actions workflow will handle deployment of files and container
               mkdir -p /opt/authproxy
 
-              # Create Docker Compose file
-              cat > /opt/authproxy/docker-compose.yml <<'COMPOSE'
-              services:
-                authproxy:
-                  image: ${var.docker_registry}/auth-proxy:latest
-                  ports:
-                    - "3000:3000"
-                  environment:
-                    - PORT=3000
-                    - OAUTH_CLIENT_ID=${var.foundations_client_id}
-                    - OAUTH_CLIENT_SECRET=${var.foundations_client_secret}
-                    - ALLOWED_ORIGINS=${var.proxy_allowed_origins}
-                  restart: unless-stopped
-              COMPOSE
-
-              # Create .env file for environment variables
-              cat > /opt/authproxy/.env <<'ENV'
-              OAUTH_CLIENT_ID=${var.foundations_client_id}
-              OAUTH_CLIENT_SECRET=${var.foundations_client_secret}
-              ALLOWED_ORIGINS=${var.proxy_allowed_origins}
-              ENV
-
-              # Create deploy script
-              cat > /opt/authproxy/deploy.sh <<'SCRIPT'
-              #!/bin/bash
-              cd /opt/authproxy
-              docker login ${var.docker_registry} -u ${var.do_username} -p ${var.do_token}
-              docker pull ${var.docker_registry}/auth-proxy:latest
-              docker compose pull
-              docker compose up -d
-              SCRIPT
-
-              chmod +x /opt/authproxy/deploy.sh
-
-              # Run initial deployment
-              /opt/authproxy/deploy.sh
+              # Create a flag file to indicate setup is complete
+              touch /opt/setup_complete
               EOF
 }
 
@@ -186,6 +153,13 @@ resource "digitalocean_firewall" "authproxy" {
   }
 
   # Allow HTTP (for the proxy service)
+  inbound_rule {
+    protocol = "tcp"
+    port_range = "80"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  # Allow direct access on 3000 as well (if needed)
   inbound_rule {
     protocol = "tcp"
     port_range = "3000"
