@@ -83,29 +83,29 @@ resource "digitalocean_droplet" "monarch" {
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
 
   user_data = <<-EOF
-              #!/bin/bash
+    #!/bin/bash
 
-              # Install Docker
-              sudo apt-get update -y
-              sudo apt-get install ca-certificates curl -y
-              sudo install -m 0755 -d /etc/apt/keyrings
-              sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-              sudo chmod a+r /etc/apt/keyrings/docker.asc
+    # Install Docker
+    sudo apt-get update -y
+    sudo apt-get install ca-certificates curl -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-              echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-                $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-                sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-              sudo apt-get update -y
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
 
-              sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-              # Create deployment directory
-              mkdir -p /opt/monarch
+    # Create deployment directory
+    mkdir -p /opt/monarch
 
-              # Create flag file to indicate setup is complete
-              touch /opt/setup_complete
-              EOF
+    # Create flag file to indicate setup is complete
+    touch /opt/setup_complete
+  EOF
 }
 
 resource "digitalocean_droplet" "authproxy" {
@@ -116,53 +116,53 @@ resource "digitalocean_droplet" "authproxy" {
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
 
   user_data = <<-EOF
-              #!/bin/bash
-              # Install Docker
-              sudo apt-get update -y
-              sudo apt-get install ca-certificates curl -y
-              sudo install -m 0755 -d /etc/apt/keyrings
-              sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-              sudo chmod a+r /etc/apt/keyrings/docker.asc
+    #!/bin/bash
+    # Install Docker
+    sudo apt-get update -y
+    sudo apt-get install ca-certificates curl -y
+    sudo install -m 0755 -d /etc/apt/keyrings
+    sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+    sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-              echo \
-                "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
-                $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
-                sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-              sudo apt-get update -y
+    echo \
+      "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+      $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+      sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update -y
 
-              sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+    sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
-              # Install certbot for certificate generation
-              sudo apt-get install certbot -y
+    # Install certbot for certificate generation
+    sudo apt-get install certbot -y
 
-              # Create directory for certificates
-              sudo mkdir -p /etc/letsencrypt
-              sudo mkdir -p /var/lib/letsencrypt
+    # Create directory for certificates
+    sudo mkdir -p /etc/letsencrypt
+    sudo mkdir -p /var/lib/letsencrypt
 
-              # Create directory for cert challenge responses
-              sudo mkdir -p /var/www/certbot
+    # Create directory for cert challenge responses
+    sudo mkdir -p /var/www/certbot
 
-              # Obtain initial certificate using standalone mode
-              # This will be replaced by the webroot method after the container is running
-              sudo certbot certonly --standalone \
-                --non-interactive --agree-tos \
-                --email ${ var.ssl_cert_email } \
-                --domains authproxy.nss.team \
-                --preferred-challenges http
+    # Obtain initial certificate using standalone mode
+    # This will be replaced by the webroot method after the container is running
+    sudo certbot certonly --standalone \
+      --non-interactive --agree-tos \
+      --email ${ var.ssl_cert_email } \
+      --domains authproxy.nss.team \
+      --preferred-challenges http
 
-              # Set permissions to allow container to read certs
-              sudo chmod -R 755 /etc/letsencrypt
+    # Set permissions to allow container to read certs
+    sudo chmod -R 755 /etc/letsencrypt
 
-              # Set up auto-renewal (using standalone mode by default)
-              echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
+    # Set up auto-renewal (using standalone mode by default)
+    echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
 
-              # Create directory for Auth Proxy
-              # GitHub Actions workflow will handle deployment of files and container
-              mkdir -p /opt/authproxy
+    # Create directory for Auth Proxy
+    # GitHub Actions workflow will handle deployment of files and container
+    mkdir -p /opt/authproxy
 
-              # Create a flag file to indicate setup is complete
-              touch /opt/setup_complete
-              EOF
+    # Create a flag file to indicate setup is complete
+    touch /opt/setup_complete
+  EOF
 }
 
 resource "digitalocean_firewall" "authproxy" {
@@ -273,6 +273,12 @@ resource "digitalocean_firewall" "monarch" {
   inbound_rule {
     protocol = "tcp"
     port_range = "8080"
+    source_addresses = ["0.0.0.0/0", "::/0"]
+  }
+
+  inbound_rule {
+    protocol = "tcp"
+    port_range = "8081"
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
