@@ -13,3 +13,7 @@ variable "API_DROPLET_ID" {
   type        = string
 }
 
+variable "ssl_cert_email" {
+  description = "Email address to use for certbot-created certificates"
+  type        = string
+}
