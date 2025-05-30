@@ -1,6 +1,6 @@
 resource "digitalocean_droplet" "authproxy" {
   name     = "authproxy"
-  size     = "s-1vcpu-1gb"  # Smallest size should be sufficient for a proxy service
+  size     = "s-1vcpu-1gb"
   image    = "ubuntu-22-04-x64"
   region   = var.REGION
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
@@ -32,22 +32,21 @@ resource "digitalocean_droplet" "authproxy" {
     # Create directory for cert challenge responses
     sudo mkdir -p /var/www/certbot
 
-    # Obtain initial certificate using standalone mode
-    # This will be replaced by the webroot method after the container is running
+    # Obtain initial certificate using webroot mode
+    # First, we need to start a temporary web server for the initial certificate
     sudo certbot certonly --standalone \
       --non-interactive --agree-tos \
-      --email ${ var.ssl_cert_email } \
+      --email ${var.ssl_cert_email} \
       --domains authproxy.nss.team \
       --preferred-challenges http
 
     # Set permissions to allow container to read certs
     sudo chmod -R 755 /etc/letsencrypt
 
-    # Set up auto-renewal (using standalone mode by default)
-    echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
+    # Set up auto-renewal using webroot method (will work after container is deployed)
+    echo "0 3 * * * certbot renew --quiet --webroot --webroot-path /var/www/certbot --deploy-hook 'cd /opt/authproxy && docker compose restart authproxy'" | sudo tee -a /var/spool/cron/crontabs/root
 
     # Create directory for Auth Proxy
-    # GitHub Actions workflow will handle deployment of files and container
     mkdir -p /opt/authproxy
 
     # Create a flag file to indicate setup is complete
