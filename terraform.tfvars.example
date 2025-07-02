@@ -1,4 +1,4 @@
-do_token = "your digital ocean API token"
-region = "nyc1"
-api_droplet_id = "id of the Learning Platform API droplet"
-ssl_cert_email = "your preferred email"
+DIGITAL_OCEAN_TOKEN = "your digital ocean API token"
+REGION = "nyc1"
+API_DROPLET_ID = "id of the Learning Platform API droplet"
+SSL_CERT_EMAIL = "your preferred email"
