@@ -1,7 +1,7 @@
 # Valkey droplet
 resource "digitalocean_droplet" "valkey" {
   name     = "valkey"
-  size     = "s-1vcpu-1gb"
+  size     = "s-1vcpu-2gb"
   image    = "ubuntu-22-04-x64"
   region   = var.REGION
   ssh_keys = [data.digitalocean_ssh_key.github_actions.fingerprint]
@@ -35,6 +35,7 @@ resource "digitalocean_droplet" "valkey" {
         - "6379:6379"
       volumes:
         - valkey-data:/data
+        - ./valkey.conf:/usr/local/etc/valkey/valkey.conf
       restart: unless-stopped
 
   volumes:
