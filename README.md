@@ -20,6 +20,11 @@
 10. Paste that as the value of the **API_DROPLET_ID** variable
 11. Add your preferred email for the value of **SSL_CERT_EMAIL**
 
+## Applying Plan
+
+1. Run `terraform apply` and wait for completion
+2. If you made changes to the Auth Proxy plan, go to https://github.com/nashville-software-school/foundations-auth-proxy/actions and force the run of the deployment so that the docker container is added to the Droplet and started
+
 ## System Diagram
 
 ```mermaid
