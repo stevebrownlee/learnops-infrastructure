@@ -1,5 +1,27 @@
 # Learning Platform Infrastructure
 
+## Getting Started
+
+1. Create a `terraform.tfvars` file in the project directory
+2. Add the following content
+  ```env
+  DIGITAL_OCEAN_TOKEN = "dop_v1_placeholder_personal_access_token"
+  REGION = "nyc1"
+  API_DROPLET_ID = "111111111"
+  SSL_CERT_EMAIL = "you@domain.com"
+  ```
+3. Log into the Digital Ocean platform dashboard
+4. Click **API** option in left-nav
+5. Generate a new personal access token
+6. Paste your new token as the value of **DIGITAL_OCEAN_TOKEN**
+7. Go to the **Droplets** section in the left-nav
+8. Click on the Droplet that is running API container
+9. In the URL, copy the numerical ID of the droplet after the `/droplets` section of the URL
+10. Paste that as the value of the **API_DROPLET_ID** variable
+11. Add your preferred email for the value of **SSL_CERT_EMAIL**
+
+## System Diagram
+
 ```mermaid
 graph TB
     subgraph "Learning Platform Infrastructure"

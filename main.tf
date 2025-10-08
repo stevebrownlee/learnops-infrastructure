@@ -154,14 +154,18 @@ resource "digitalocean_droplet" "authproxy" {
     sudo chmod -R 755 /etc/letsencrypt
 
     # Set up auto-renewal (using standalone mode by default)
-    echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
+  # Ensure cron will stop and start the auth proxy using an absolute docker compose
+  # command that points at the deployment directory. Using the absolute path
+  # avoids PATH issues when cron runs and does not require cd'ing to the
+  # directory first.
+  echo "0 3 * * * certbot renew --quiet --standalone --pre-hook '/usr/bin/docker compose -f /opt/authproxy/docker-compose.yml stop || true' --post-hook '/usr/bin/docker compose -f /opt/authproxy/docker-compose.yml start || true'" | sudo tee -a /var/spool/cron/crontabs/root
 
-    # Create directory for Auth Proxy
-    # GitHub Actions workflow will handle deployment of files and container
-    mkdir -p /opt/authproxy
+  # Create directory for Auth Proxy
+  # GitHub Actions workflow will handle deployment of files and container
+  mkdir -p /opt/authproxy
 
-    # Create a flag file to indicate setup is complete
-    touch /opt/setup_complete
+  # Create a flag file to indicate setup is complete
+  touch /opt/setup_complete
   EOF
 }
 
