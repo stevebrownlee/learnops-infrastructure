@@ -154,7 +154,8 @@ resource "digitalocean_droplet" "authproxy" {
     sudo chmod -R 755 /etc/letsencrypt
 
     # Set up auto-renewal (using standalone mode by default)
-    echo "0 3 * * * certbot renew --quiet --standalone --pre-hook 'docker stop auth-proxy || true' --post-hook 'docker start auth-proxy || true'" | sudo tee -a /var/spool/cron/crontabs/root
+    echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --deploy-hook 'docker exec authproxy-authproxy-1 nginx -s reload'" | sudo tee -a /var/spool/cron/crontabs/root
+
 
     # Create directory for Auth Proxy
     # GitHub Actions workflow will handle deployment of files and container
