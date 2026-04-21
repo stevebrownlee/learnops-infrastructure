@@ -84,6 +84,7 @@ resource "digitalocean_droplet" "monarch" {
 
   user_data = <<-EOF
     #!/bin/bash
+    set -e
 
     # Install Docker
     sudo apt-get update -y
@@ -100,10 +101,14 @@ resource "digitalocean_droplet" "monarch" {
 
     sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
+    # Explicitly enable and start Docker so it is ready before flag is set
+    sudo systemctl enable docker
+    sudo systemctl start docker
+
     # Create deployment directory
     mkdir -p /opt/monarch
 
-    # Create flag file to indicate setup is complete
+    # Only created if every step above succeeded (set -e)
     touch /opt/setup_complete
   EOF
 }
@@ -153,8 +158,10 @@ resource "digitalocean_droplet" "authproxy" {
     # Set permissions to allow container to read certs
     sudo chmod -R 755 /etc/letsencrypt
 
-    # Set up auto-renewal (using standalone mode by default)
-    echo "0 3 * * * certbot renew --quiet --webroot -w /var/www/certbot --deploy-hook 'docker exec authproxy-authproxy-1 nginx -s reload'" | sudo tee -a /var/spool/cron/crontabs/root
+    # Set up auto-renewal using standalone mode with pre/post hooks to free port 80
+    # /etc/cron.d/ files require a username column and must be 0644 — cron enforces this
+    echo "0 3 * * * root certbot renew --quiet --pre-hook 'docker stop authproxy-authproxy-1' --post-hook 'docker start authproxy-authproxy-1'" | sudo tee /etc/cron.d/certbot-renew
+    sudo chmod 644 /etc/cron.d/certbot-renew
 
 
     # Create directory for Auth Proxy
